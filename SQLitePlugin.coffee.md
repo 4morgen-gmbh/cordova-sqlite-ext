@@ -216,7 +216,7 @@
         # (done)
 
       else
-        # openDatabase part 1:
+        # openDatabase step 1:
         console.log 'OPEN database: ' + @dbname
 
         opensuccesscb = =>
@@ -506,7 +506,6 @@
           error: handlerFor(i, false)
 
         tropts.push
-          qid: null # TBD NEEDED to pass @brodybits/Cordova-sql-test-app for some reason
           sql: request.sql
           params: request.params
 
@@ -518,7 +517,6 @@
         for resultIndex in [0 .. result.length-1]
           r = result[resultIndex]
           type = r.type
-          # NOTE: r.qid can be ignored
           res = r.result
 
           q = mycbmap[resultIndex]
@@ -670,6 +668,18 @@
         if !!openargs.createFromLocation and openargs.createFromLocation == 1
           openargs.createFromResource = "1"
 
+        if !!openargs.androidDatabaseProvider and !!openargs.androidDatabaseImplementation
+          throw newSQLError 'AMBIGUOUS: both androidDatabaseProvider and deprecated androidDatabaseImplementation settings are present in openDatabase call. Please drop androidDatabaseImplementation in favor of androidDatabaseProvider.'
+
+        if openargs.androidDatabaseProvider isnt undefined and
+            openargs.androidDatabaseProvider isnt 'default' and
+            openargs.androidDatabaseProvider isnt 'system'
+          throw newSQLError "Incorrect androidDatabaseProvider value. Valid values are: 'default', 'system'"
+
+        if !!openargs.androidDatabaseProvider and openargs.androidDatabaseProvider is 'system'
+          openargs.androidOldDatabaseImplementation = 1
+
+        # DEPRECATED:
         if !!openargs.androidDatabaseImplementation and openargs.androidDatabaseImplementation == 2
           openargs.androidOldDatabaseImplementation = 1
 
